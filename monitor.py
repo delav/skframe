@@ -1,12 +1,12 @@
 import websocket
-from storage import RoundStorage
+from websocket import ABNF
 
 
 class Monitor(object):
 
-    def __init__(self, sk, url, request):
+    def __init__(self, route, url, request):
         self.ws = websocket.WebSocketApp(url)
-        self.sk = sk
+        self.rt = route
         self.request = request
 
     def connect(self):
@@ -21,18 +21,18 @@ class Monitor(object):
         self.ws.keep_running = False
 
     def on_error(self, err):
-        pass
+        print("err:", err)
 
     def on_close(self):
-        pass
+        print("#close#")
 
     def on_open(self):
         print("请求连接:", self.request)
-        self.ws.send(self.request, websocket.ABNF.OPCODE_BINARY)
+        self.ws.send(self.request, ABNF.OPCODE_BINARY)
 
     def on_message(self, msg=None):
         print("收到消息:", msg)
-        self.sk.dispatch_message(msg)
+        self.rt.dispatch_message(msg)
 
 
 

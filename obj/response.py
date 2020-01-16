@@ -1,7 +1,18 @@
 from client import Client
+from settings import requestBet
 
 cli = Client(__name__)
-sk = cli.sk
+sk = cli.rt
+dk = cli.dt
+
+
+# @dk.determine
+# def judge():
+#     pass
+
+# @dk.determine
+# class Judge(object):
+#     pass
 
 
 @sk.route("ResBet")
@@ -22,8 +33,9 @@ def reqNotify():
 @sk.route("RspIntoRoom")
 def rspIntoRoom():
     print("99999999")
-    # cli.send(requestBet)
+    message = cli.last_msg
+    print("message:", message)
+    cli.send(requestBet)
 
 
 cli.run()
-# print(cli.get_settings_attr("settings.py", "url"))

@@ -3,25 +3,29 @@ import sys
 import pkgutil
 import types
 import os
-import errno
 from monitor import Monitor
-from dispatcher import Route
+from dispatcher import Router
+from dispatcher import Determiner
 
 string_types = (str,)
+settings_file = "settings.py"
 
 
 class Client(object):
 
-    mt = None
+    receiver = None
+
     import_name = None
 
     def __init__(self, import_name, root_path=None):
-        self.sk = Route()
+        self.rt = Router()
+        self.dt = Determiner()
+
         self.import_name = import_name
+
         if root_path is None:
             root_path = self._get_root_path(self.import_name)
         self.root_path = root_path
-        print("root_path:", root_path)
 
     def _import_string(self, import_name, silent=False):
 
@@ -67,7 +71,7 @@ class Client(object):
 
         return module
 
-    def get_settings_attr(self, filename, attr):
+    def _get_settings_attr(self, filename, attr):
 
         mod = self._load_file_attr(filename=filename)
 
@@ -78,10 +82,15 @@ class Client(object):
 
         return result
 
+    @property
+    def last_msg(self):
+
+        return self.rt.last_message
+
     def _check_files(self):
-        settings_file = os.path.join(self.root_path, "settings")
-        if not os.path.exists(settings_file):
-            raise RuntimeError("No settings file for this object")
+        settings = os.path.join(self.root_path, settings_file)
+        if not os.path.exists(settings):
+            raise RuntimeError("No settings.py file for this object")
 
     def _get_root_path(self, import_name):
         """Returns the path to a package or cwd if that cannot be found.  This
@@ -113,34 +122,15 @@ class Client(object):
         return os.path.dirname(os.path.abspath(filepath))
 
     def send(self, request):
-        ws = self.mt.ws
+
+        ws = self.receiver.ws
         print("请求下注:", request)
         ws.send(request, websocket.ABNF.OPCODE_BINARY)
 
     def run(self):
-        request = self.get_settings_attr("settings.py", "request")
-        url = self.get_settings_attr("settings.py", "url")
-        print("url:", url)
-        print("request:", request)
-        self.__class__.mt = Monitor(self.sk, url, request)
+        request = self._get_settings_attr(settings_file, "request")
+        url = self._get_settings_attr(settings_file, "url")
+        self.__class__.receiver = Monitor(self.rt, url, request)
         print("开始执行......")
-        self.mt.connect()
+        self.receiver.connect()
 
-
-class ConfigAttribute(object):
-    """Makes an attribute forward to the config"""
-
-    def __init__(self, name, get_converter=None):
-        self.__name__ = name
-        self.get_converter = get_converter
-
-    def __get__(self, obj, tp=None):
-        if obj is None:
-            return self
-        rv = obj.config[self.__name__]
-        if self.get_converter is not None:
-            rv = self.get_converter(rv)
-        return rv
-
-    def __set__(self, obj, value):
-        obj.config[self.__name__] = value
