@@ -5,7 +5,6 @@ import types
 import os
 from monitor import Monitor
 from dispatcher import Router
-from dispatcher import Determiner
 
 string_types = (str,)
 settings_file = "settings.py"
@@ -19,7 +18,6 @@ class Client(object):
 
     def __init__(self, import_name, root_path=None):
         self.rt = Router()
-        self.dt = Determiner()
 
         self.import_name = import_name
 

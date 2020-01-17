@@ -6,6 +6,7 @@ class Router(object):
 
     def __init__(self):
         self.url_map = RouteStorage()
+        self.judge_list = []
         self.last_message = None
 
     def route(self, rule):
@@ -19,14 +20,30 @@ class Router(object):
             key = rule
             self.url_map.add(key, view_func)
 
+    @property
+    def determine(self):
+        def decorator(f):
+            self._add_judge(f)
+            return f
+        return decorator
+
+    def _add_judge(self, view_func=None):
+        self.judge_list.append(view_func)
+
+    def judge_type(self, view_func=None):
+        if inspect.isclass(view_func):
+            cls = view_func()
+        elif inspect.isfunction(view_func):
+            print("判断器属于函数")
+        elif inspect.ismethod(view_func):
+            print("判断器属于方法")
+        else:
+            pass
+
     def _find_keyword(self, key, message):
         if str(message).find(key) > -1:
             return True
         return False
-
-    def _last_msg(self):
-
-        return self.last_message
 
     def dispatch_message(self, message):
         keys = self.url_map.keys()
@@ -48,27 +65,7 @@ class Router(object):
 
         return action_func()
 
+    def _last_msg(self):
 
-class Determiner(object):
+        return self.last_message
 
-    def __init__(self):
-        self.judge_list = []
-
-    @property
-    def determine(self):
-        def decorator(f):
-            self.add_judge(f)
-            return f
-        return decorator
-
-    def add_judge(self, view_func=None):
-        if inspect.isclass(view_func):
-            print("判断器属于类")
-        if inspect.isfunction(view_func):
-            print("判断器属于函数")
-        if inspect.ismethod(view_func):
-            print("判断器属于方法")
-        self.judge_list.append(view_func)
-
-    def do(self):
-        pass
