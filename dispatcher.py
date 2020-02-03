@@ -9,7 +9,7 @@ class Router(object):
         self.judge_list = []
         self.last_message = None
 
-    def route(self, rule):
+    def route(self, rule=None):
         def decorator(f):
             self._add_url_rule(rule, f)
             return f
