@@ -18,14 +18,16 @@ def req_notify():
 
 
 @sk.route(key3)
-def finish_notify():
+def start_notify():
     print("88888888")
+    message = cli.last_msg
+    round_id = message.roundId
+    cli.set_round_id(round_id)
 
 
 @sk.route(key4)
 def rsp_into_room():
     print("99999999")
-    # message = cli.last_msg
-    # print("message:", message)
     cli.send(requestBet)
+
 

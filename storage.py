@@ -31,6 +31,17 @@ class BaseStorage(object):
                            "can not be found in dict".format(key))
         self.result[key] = value
 
+    def append(self, key, value):
+        if key not in self.result:
+            self.add(key, [])
+        obj = self.get(key)
+        if isinstance(obj, list):
+            raise TypeError("Append error, value of key [{}] "
+                            "except list type".format(key))
+        else:
+            obj.append(value)
+        self.result[key] = obj
+
     def exists(self, key):
         if key in self.result:
             return True
@@ -62,3 +73,4 @@ class RoundStorage(BaseStorage):
 
 class CasesStorage(BaseStorage):
     pass
+

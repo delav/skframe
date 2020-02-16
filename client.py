@@ -1,10 +1,8 @@
-import websocket
 import sys
 import pkgutil
 import types
 import os
 from monitor import Monitor
-from dispatcher import Router
 
 string_types = (str,)
 settings_file = "settings.py"
@@ -16,8 +14,12 @@ class Client(object):
 
     import_name = None
 
+    round_id = None
+
     def __init__(self, import_name, root_path=None):
-        self.rt = Router()
+
+        self.msg = self._get_settings_attr(settings_file, "request")
+        self.url = self._get_settings_attr(settings_file, "url")
 
         self.import_name = import_name
 
@@ -25,7 +27,8 @@ class Client(object):
             root_path = self._get_root_path(self.import_name)
         self.root_path = root_path
 
-    def _import_string(self, import_name, silent=False):
+    @staticmethod
+    def _import_string(import_name, silent=False):
 
         import_name = str(import_name).replace(":", ".")
         try:
@@ -80,17 +83,13 @@ class Client(object):
 
         return result
 
-    @property
-    def last_msg(self):
-
-        return self.rt.last_message
-
     def _check_files(self):
         settings = os.path.join(self.root_path, settings_file)
         if not os.path.exists(settings):
             raise RuntimeError("No settings.py file for this object")
 
-    def _get_root_path(self, import_name):
+    @staticmethod
+    def _get_root_path(import_name):
         """Returns the path to a package or cwd if that cannot be found.  This
         returns the path of a package or the folder that contains a module.
 
@@ -119,16 +118,26 @@ class Client(object):
         # filepath is import_name.py for a module, or __init__.py for a package.
         return os.path.dirname(os.path.abspath(filepath))
 
-    def send(self, request):
-
-        ws = self.receiver.ws
-        print("请求下注:", request)
-        ws.send(request, websocket.ABNF.OPCODE_BINARY)
-
     def run(self):
-        request = self._get_settings_attr(settings_file, "request")
-        url = self._get_settings_attr(settings_file, "url")
-        self.__class__.receiver = Monitor(self.rt, url, request)
+        self.__class__.receiver = Monitor(self.url, self.msg)
+        self.__class__.receiver.round_id = self.__class__.round_id
         print("开始执行......")
         self.receiver.connect()
+
+    # def set_round_id(self, round_id):
+    #     self.__class__.round_id = round_id
+    #
+    # def round_storage(self):
+    #     return self.route.round_storage
+    #
+    # def save_cases_storage(self):
+    #     if self.__class__.round_id is not None:
+    #         self.cases_storage.add(self.__class__.round_id, self.round_storage())
+    #     else:
+    #         print("本局游戏您没有下注")
+    #
+    # def cases_storage(self):
+    #     return self.cases_storage
+
+
 
