@@ -10,16 +10,9 @@ settings_file = "settings.py"
 
 class Client(object):
 
-    receiver = None
-
     import_name = None
 
-    round_id = None
-
     def __init__(self, import_name, root_path=None):
-
-        self.msg = self._get_settings_attr(settings_file, "request")
-        self.url = self._get_settings_attr(settings_file, "url")
 
         self.import_name = import_name
 
@@ -118,26 +111,19 @@ class Client(object):
         # filepath is import_name.py for a module, or __init__.py for a package.
         return os.path.dirname(os.path.abspath(filepath))
 
-    def run(self):
-        self.__class__.receiver = Monitor(self.url, self.msg)
-        self.__class__.receiver.round_id = self.__class__.round_id
-        print("开始执行......")
-        self.receiver.connect()
+    @property
+    def storage(self):
+        url = self._get_settings_attr(settings_file, "url")
+        msg = self._get_settings_attr(settings_file, "data")
+        print("url:", url)
+        print("data:", msg)
+        receiver = Monitor(url, msg)
+        return receiver
 
-    # def set_round_id(self, round_id):
-    #     self.__class__.round_id = round_id
-    #
-    # def round_storage(self):
-    #     return self.route.round_storage
-    #
-    # def save_cases_storage(self):
-    #     if self.__class__.round_id is not None:
-    #         self.cases_storage.add(self.__class__.round_id, self.round_storage())
-    #     else:
-    #         print("本局游戏您没有下注")
-    #
-    # def cases_storage(self):
-    #     return self.cases_storage
+    def run(self):
+        receiver = self.storage
+        print("开始执行......")
+        receiver.connect()
 
 
 

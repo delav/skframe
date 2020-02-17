@@ -1,5 +1,5 @@
 from settings import requestBet
-from runclient import cli, sk
+from runclient import cli, sk, storage
 
 key1 = "ResBet"
 key2 = "NotifyStart"
@@ -20,9 +20,9 @@ def req_notify():
 @sk.route(key3)
 def start_notify():
     print("88888888")
-    message = cli.last_msg
+    message = storage.last_msg
     round_id = message.roundId
-    cli.set_round_id(round_id)
+    storage.set_round_id(round_id)
 
 
 @sk.route(key4)

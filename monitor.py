@@ -1,51 +1,57 @@
+import sys
+import logging
+import traceback
 import websocket
 from websocket import ABNF
 from storage import RoundStorage
 from storage import CasesStorage
 from route import Router
 
+logger = logging.getLogger()
+
 
 class Monitor(object):
 
     round_id = None
 
-    def __init__(self, url, link):
+    def __init__(self, url, data):
         self.ws = websocket.WebSocketApp(url)
         self.round = RoundStorage()
         self.cases = CasesStorage()
         self.route = Router()
-        self.link = link
+        self.data = data
         self.url_map = self.route.url_map
         self.last_message = None
 
     def connect(self):
-        self.ws.on_open = self.on_open
+        # self.ws.on_open = self.on_open
         self.ws.on_error = self.on_error
         self.ws.on_message = self.on_message
         self.ws.on_close = self.on_close
         print("开始连接.....")
+        self.ws.send(self.data, ABNF.OPCODE_BINARY)
         self.ws.run_forever()
 
     def disconnect(self):
         self.ws.keep_running = False
 
     def on_error(self, err):
-        print("err:", err)
+        logger.debug("err:", err)
 
     def on_close(self):
-        print("#close#")
+        logger.debug("#close#")
 
     def on_open(self):
-        print("请求连接:", self.link)
-        self.ws.send(self.link, ABNF.OPCODE_BINARY)
+        logger.log("请求连接:", self.data)
+        self.ws.send(self.data, ABNF.OPCODE_BINARY)
 
     def on_message(self, msg=None):
-        print("收到消息:", msg)
+        logger.log("收到消息:", msg)
         self.dispatch_message(msg)
 
-    def send(self, request):
-        print("请求下注:", request)
-        self.ws.send(request, websocket.ABNF.OPCODE_BINARY)
+    def send(self, data):
+        logger.log("请求下注:", data)
+        self.ws.send(data, websocket.ABNF.OPCODE_BINARY)
 
     def save_massage(self, key, message):
         if key is not None:
@@ -85,7 +91,17 @@ class Monitor(object):
         if not self.cases.exists(self.__class__.round_id):
             self.save_cases()
 
-        return action_func()
+        self._callback(action_func)
+
+    def _callback(self, callback, *args):
+        if callback:
+            try:
+                callback(self, *args)
+            except Exception as e:
+                logger.error(e)
+                if logger.isEnabledFor(logging.DEBUG):
+                    _, _, tb = sys.exc_info()
+                    traceback.print_tb(tb)
 
     def set_round_id(self, round_id):
         self.__class__.round_id = round_id
@@ -97,7 +113,7 @@ class Monitor(object):
         if self.__class__.round_id is not None:
             self.cases.add(self.__class__.round_id, self.round_storage())
         else:
-            print("本局游戏您没有下注")
+            logger.debug("本局游戏您没有下注")
 
     def cases_storage(self):
         return self.cases
