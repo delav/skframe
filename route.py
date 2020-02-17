@@ -1,4 +1,3 @@
-from storage import RoundStorage
 from storage import RouteStorage
 
 
@@ -13,7 +12,6 @@ class Router(object):
 
     def __init__(self):
         self.url_map = RouteStorage()
-        self.round_storage = RoundStorage()
 
         self.judge_list = []
         self.last_message = None

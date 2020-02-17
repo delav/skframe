@@ -9,12 +9,12 @@ class Monitor(object):
 
     round_id = None
 
-    def __init__(self, url, request):
+    def __init__(self, url, link):
         self.ws = websocket.WebSocketApp(url)
         self.round = RoundStorage()
         self.cases = CasesStorage()
         self.route = Router()
-        self.request = request
+        self.link = link
         self.url_map = self.route.url_map
         self.last_message = None
 
@@ -36,8 +36,8 @@ class Monitor(object):
         print("#close#")
 
     def on_open(self):
-        print("请求连接:", self.request)
-        self.ws.send(self.request, ABNF.OPCODE_BINARY)
+        print("请求连接:", self.link)
+        self.ws.send(self.link, ABNF.OPCODE_BINARY)
 
     def on_message(self, msg=None):
         print("收到消息:", msg)
