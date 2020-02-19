@@ -13,10 +13,10 @@ logger = logging.getLogger()
 class Monitor(object):
 
     round_id = None
+    round_msg = RoundStorage()
 
     def __init__(self, url, data):
         self.ws = websocket.WebSocketApp(url)
-        self.round = RoundStorage()
         self.cases = CasesStorage()
         self.route = Router()
         self.data = data
@@ -49,15 +49,19 @@ class Monitor(object):
         logger.log("收到消息:", msg)
         self.dispatch_message(msg)
 
-    def send(self, data):
+    def send(self, data, key=None):
         logger.log("请求下注:", data)
+        if key is not None:
+            self.save_massage(key, data)
+        else:
+            self.__class__.round_msg.append("request", data)
         self.ws.send(data, websocket.ABNF.OPCODE_BINARY)
 
-    def save_massage(self, key, message):
+    def save_massage(self, key, message, flag=None):
         if key is not None:
-            self.round.add(key, message)
+            self.__class__.round_msg.add(key, message)
         else:
-            self.round.append("other", message)
+            self.__class__.round_msg.append(flag, message)
 
     def last_massage(self):
         return self.last_massage
@@ -86,9 +90,10 @@ class Monitor(object):
             raise TypeError("{}() required no argument, "
                             "but get {}".format(action_func, args))
 
-        self.save_massage(keyword, message)
+        self.save_massage(keyword, message, "response")
 
         if not self.cases.exists(self.__class__.round_id):
+            self.__class__.round_msg = RoundStorage()
             self.save_cases()
 
         self._callback(action_func)
@@ -107,7 +112,7 @@ class Monitor(object):
         self.__class__.round_id = round_id
 
     def round_storage(self):
-        return self.round
+        return self.__class__.round_msg
 
     def save_cases(self):
         if self.__class__.round_id is not None:
