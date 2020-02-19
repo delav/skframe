@@ -1,5 +1,6 @@
 from exception import *
 
+# 设置外部只能从该文件导入以下三个类
 __all__ = ["RoundStorage", "CasesStorage", "RouteStorage"]
 
 

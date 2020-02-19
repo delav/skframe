@@ -3,7 +3,7 @@ from route import Router
 
 cli = Client(__name__)
 sk = Router()
-# storage = cli.storage
+storage = cli.storage
 
 
 if __name__ == '__main__':

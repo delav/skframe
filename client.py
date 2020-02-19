@@ -10,6 +10,7 @@ settings_file = "settings.py"
 
 class Client(object):
 
+    # 引入Client类的文件名
     import_name = None
 
     def __init__(self, import_name, root_path=None):
@@ -45,6 +46,11 @@ class Client(object):
                 raise ImportError((import_name, e), sys.exc_info()[2])
 
     def _load_file_attr(self, filename):
+        """
+        引入文件的属性
+        :param filename: 文件名
+        :return:
+        """
         filename = os.path.join(self.root_path, filename)
         module = types.ModuleType("config")
         module.__file__ = filename
@@ -66,6 +72,12 @@ class Client(object):
         return module
 
     def _get_settings_attr(self, filename, attr):
+        """
+        获取配置文件的属性值
+        :param filename: 配置文件
+        :param attr: 属性名
+        :return:
+        """
 
         mod = self._load_file_attr(filename=filename)
 
@@ -77,6 +89,10 @@ class Client(object):
         return result
 
     def _check_files(self):
+        """
+        检查配置文件是否存在
+        :return:
+        """
         settings = os.path.join(self.root_path, settings_file)
         if not os.path.exists(settings):
             raise RuntimeError("No settings.py file for this object")
