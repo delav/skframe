@@ -1,4 +1,5 @@
-from settings import requestBet
+from settings import reqBet
+from converter import str2bin
 from runclient import cli, sk, storage
 
 key1 = "ResBet"
@@ -28,6 +29,7 @@ def start_notify():
 @sk.route(key4)
 def rsp_into_room():
     print("99999999")
-    cli.send(requestBet)
+    bet_data = str2bin(reqBet)
+    cli.send(bet_data)
 
 
