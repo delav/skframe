@@ -131,8 +131,6 @@ class Client(object):
     def storage(self):
         url = self._get_settings_attr(settings_file, "url")
         msg = self._get_settings_attr(settings_file, "data")
-        print("url:", url)
-        print("data:", msg)
         receiver = Monitor(url, msg)
         return receiver
 

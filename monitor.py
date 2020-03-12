@@ -33,12 +33,11 @@ class Monitor(object):
         与服务器进行长连接
         :return: None
         """
-        # self.ws.on_open = self.on_open
+        self.ws.on_open = self.on_open
         self.ws.on_error = self.on_error
         self.ws.on_message = self.on_message
         self.ws.on_close = self.on_close
         print("开始连接.....")
-        self.ws.send(self.data, ABNF.OPCODE_BINARY)
         self.ws.run_forever()
 
     def disconnect(self):
@@ -68,7 +67,7 @@ class Monitor(object):
         客户端请求连接服务器
         :return:
         """
-        logger.log("请求连接:", self.data)
+        logger.debug("请求连接:", self.data)
         self.ws.send(self.data, ABNF.OPCODE_BINARY)
 
     def on_message(self, msg=None):
@@ -77,7 +76,7 @@ class Monitor(object):
         :param msg: 消息
         :return: None
         """
-        logger.log("收到消息:", msg)
+        logger.debug("收到消息:", msg)
         self.dispatch_message(msg)
 
     def send(self, data, key=None):
@@ -87,7 +86,7 @@ class Monitor(object):
         :param key: 使用key作为关键字来保存该发送的消息
         :return: None
         """
-        logger.log("请求下注:", data)
+        logger.debug("请求下注:", data)
         if key is not None:
             self.save_massage(key, data)
         else:
